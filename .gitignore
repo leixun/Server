@@ -1,0 +1,5 @@
+# built application files
+*.exe
+*.opensdf
+*.log
+*.tlog
