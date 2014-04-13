@@ -81,10 +81,14 @@ public:
 	}
 
 private:
+	udp::socket socket_;
+	udp::endpoint remote_endpoint_;
+	boost::array<int, 1> recv_buf_;
+
 	void start_receive()
 	{
 		socket_.async_receive_from(
-			boost::asio::buffer(recv_buffer_), remote_endpoint_,
+			boost::asio::buffer(recv_buf_), remote_endpoint_,
 			boost::bind(&udp_server::handle_receive, this,
 			boost::asio::placeholders::error,
 			boost::asio::placeholders::bytes_transferred));
@@ -93,7 +97,40 @@ private:
 	void handle_receive(const boost::system::error_code& error,
 		std::size_t /*bytes_transferred*/)
 	{
-		if (recv_buffer_[0] == 0){
+		int retState = recv_buf_[0];
+
+		cout << retState << endl;
+
+		if (retState & 1){
+			cout << "move left" << endl;
+			scene->setHMove(0, -1);
+		}
+		if (retState & 1 << 1){
+			cout << "move right" << endl;
+			scene->setHMove(0, 1);
+		}
+		if (retState & 1 << 2){
+			cout << "move up" << endl;
+			scene->setVMove(0, 1);
+		}
+		if (retState & 1 << 3){
+			cout << "move down" << endl;
+			scene->setVMove(0, -1);
+		}
+		if (!(retState | 0)){
+			scene->cancelHMove(0, -1);
+		}
+		if (!(retState | 0 << 1)){
+			scene->cancelHMove(0, 1);
+		}
+		if (!(retState | 0 << 2)){
+			scene->cancelVMove(0, 1);
+		}
+		if (!(retState | 0 << 3)){
+			scene->cancelVMove(0, -1);
+		}
+
+		/*if (recv_buffer_[0] == 0){
 			scene->setHMove(0, -1);
 		}
 		else if (recv_buffer_[0] == 1){
@@ -116,7 +153,17 @@ private:
 		}
 		else if (recv_buffer_[0] == 7){
 			scene->cancelVMove(0, -1);
-		}
+		}*/
+		boost::array<mat4, 1> m;
+		m[0] = scene->getPlayerMats()[0];
+		boost::shared_ptr<std::string> message(
+			new std::string("this is a string"));
+		socket_.async_send_to(
+			boost::asio::buffer(m), remote_endpoint_,
+			boost::bind(&udp_server::handle_send, this, message,
+			boost::asio::placeholders::error,
+			boost::asio::placeholders::bytes_transferred));
+
 		start_receive();
 	}
 	void handle_send(boost::shared_ptr<std::string> /*message*/,
@@ -124,10 +171,6 @@ private:
 		std::size_t /*bytes_transferred*/)
 	{
 	}
-
-	udp::socket socket_;
-	udp::endpoint remote_endpoint_;
-	boost::array<int, 1> recv_buffer_;
 };
 udp_server* server;
 void Window::idleCallback(void)
@@ -145,7 +188,7 @@ void Window::displayCallback(void)
 }
 
 void server_update(int value){
-	glutTimerFunc(500, server_update, 0);
+	glutTimerFunc(100, server_update, 0);
 }
 
 int main(int argc, char *argv[])
@@ -166,7 +209,7 @@ int main(int argc, char *argv[])
 	  float diff = (float)(clock() - tick) / CLOCKS_PER_SEC;
 	  tick = clock();
 	  scene->simulate(diff, 1.0 / 100);
-	  server->send();
+	  //server->send();
 	  io_service.poll();
   }
 
