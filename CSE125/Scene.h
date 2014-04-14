@@ -2,6 +2,9 @@
 #include <vector>
 #include "Object.h"
 #include "Octree.h"
+#include "Cube.h"
+#include "Ground.h"
+
 using namespace std;
 class Scene
 {

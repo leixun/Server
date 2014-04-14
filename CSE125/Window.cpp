@@ -2,10 +2,8 @@
 #include <iostream>
 #include <string>
 #include <time.h>
-#include <boost/array.hpp>
-#include <boost/bind.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/asio.hpp>
+#include "udpServer.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
@@ -59,120 +57,7 @@ std::string make_daytime_string()
 	return "efef";
 }
 
-class udp_server
-{
-public:
-	udp_server(boost::asio::io_service& io_service)
-		: socket_(io_service, udp::endpoint(udp::v4(), 13))
-	{
-		start_receive();
-	}
-
-	void send(){
-		boost::array<mat4, 1> m;
-		m[0] = scene->getPlayerMats()[0];
-		boost::shared_ptr<std::string> message(
-			new std::string("this is a string"));
-		socket_.async_send_to(
-			boost::asio::buffer(m), remote_endpoint_,
-			boost::bind(&udp_server::handle_send, this, message,
-			boost::asio::placeholders::error,
-			boost::asio::placeholders::bytes_transferred));
-	}
-
-private:
-	udp::socket socket_;
-	udp::endpoint remote_endpoint_;
-	boost::array<int, 1> recv_buf_;
-
-	void start_receive()
-	{
-		socket_.async_receive_from(
-			boost::asio::buffer(recv_buf_), remote_endpoint_,
-			boost::bind(&udp_server::handle_receive, this,
-			boost::asio::placeholders::error,
-			boost::asio::placeholders::bytes_transferred));
-	}
-
-	void handle_receive(const boost::system::error_code& error,
-		std::size_t /*bytes_transferred*/)
-	{
-		int retState = recv_buf_[0];
-
-		cout << retState << endl;
-
-		if (retState & 1){
-			cout << "move left" << endl;
-			scene->setHMove(0, -1);
-		}
-		if (retState & 1 << 1){
-			cout << "move right" << endl;
-			scene->setHMove(0, 1);
-		}
-		if (retState & 1 << 2){
-			cout << "move up" << endl;
-			scene->setVMove(0, 1);
-		}
-		if (retState & 1 << 3){
-			cout << "move down" << endl;
-			scene->setVMove(0, -1);
-		}
-		if (!(retState | 0)){
-			scene->cancelHMove(0, -1);
-		}
-		if (!(retState | 0 << 1)){
-			scene->cancelHMove(0, 1);
-		}
-		if (!(retState | 0 << 2)){
-			scene->cancelVMove(0, 1);
-		}
-		if (!(retState | 0 << 3)){
-			scene->cancelVMove(0, -1);
-		}
-
-		/*if (recv_buffer_[0] == 0){
-			scene->setHMove(0, -1);
-		}
-		else if (recv_buffer_[0] == 1){
-			scene->cancelHMove(0, -1);
-		}
-		else if (recv_buffer_[0] == 2){
-			scene->setHMove(0, 1);
-		}
-		else if (recv_buffer_[0] == 3){
-			scene->cancelHMove(0, 1);
-		}
-		else if (recv_buffer_[0] == 4){
-			scene->setVMove(0, 1);
-		}
-		else if (recv_buffer_[0] == 5){
-			scene->cancelVMove(0, 1);
-		}
-		else if (recv_buffer_[0] == 6){
-			scene->setVMove(0, -1);
-		}
-		else if (recv_buffer_[0] == 7){
-			scene->cancelVMove(0, -1);
-		}*/
-		boost::array<mat4, 1> m;
-		m[0] = scene->getPlayerMats()[0];
-		boost::shared_ptr<std::string> message(
-			new std::string("this is a string"));
-		socket_.async_send_to(
-			boost::asio::buffer(m), remote_endpoint_,
-			boost::bind(&udp_server::handle_send, this, message,
-			boost::asio::placeholders::error,
-			boost::asio::placeholders::bytes_transferred));
-
-		start_receive();
-	}
-	void handle_send(boost::shared_ptr<std::string> /*message*/,
-		const boost::system::error_code& /*error*/,
-		std::size_t /*bytes_transferred*/)
-	{
-	}
-};
-udp_server* server;
+udpServer* server;
 void Window::idleCallback(void)
 {
 	static time_t tick = clock();
@@ -197,19 +82,61 @@ int main(int argc, char *argv[])
 
   try
   {
-	  server = new udp_server(io_service);
+	  server = new udpServer(io_service);
   }
   catch (std::exception& e)
   {
 	  std::cerr << e.what() << std::endl;
   }
 
+  int retState = 0;
+
   while (true){
 	  static time_t tick = clock();
 	  float diff = (float)(clock() - tick) / CLOCKS_PER_SEC;
 	  tick = clock();
 	  scene->simulate(diff, 1.0 / 100);
-	  //server->send();
+	  retState = server->get_keyState();
+	  io_service.poll();
+
+	  if (retState & 1){
+		  cout << "move left" << endl;
+		  scene->setHMove(0, -1);
+	  }
+	  if (retState & 1 << 1){
+		  cout << "move right" << endl;
+		  scene->setHMove(0, 1);
+	  }
+	  if (retState & 1 << 2){
+		  cout << "move up" << endl;
+		  scene->setVMove(0, 1);
+	  }
+	  if (retState & 1 << 3){
+		  cout << "move down" << endl;
+		  scene->setVMove(0, -1);
+	  }
+	  if (!(retState | 0)){
+		  scene->cancelHMove(0, -1);
+	  }
+	  if (!(retState | 0 << 1)){
+		  scene->cancelHMove(0, 1);
+	  }
+	  if (!(retState | 0 << 2)){
+		  scene->cancelVMove(0, 1);
+	  }
+	  if (!(retState | 0 << 3)){
+		  scene->cancelVMove(0, -1);
+	  }
+	  boost::array<mat4, 1> m;
+	  m[0] = scene->getPlayerMats()[0];
+
+	  //send m
+	  cout << (m[0])[0][0] << (m[0])[0][1] << (m[0])[0][2] << (m[0])[0][3] << endl;
+	  cout << (m[0])[1][0] << (m[0])[1][1] << (m[0])[1][2] << (m[0])[1][3] << endl;
+	  cout << (m[0])[2][0] << (m[0])[2][1] << (m[0])[2][2] << (m[0])[2][3] << endl;
+	  cout << (m[0])[3][0] << (m[0])[3][1] << (m[0])[3][2] << (m[0])[3][3] << endl;
+
+	  server->send_mat4(m);
 	  io_service.poll();
   }
 
