@@ -1,6 +1,7 @@
 #ifndef GLUTILS_H
 #define GLUTILS_H
 
+#pragma once
 class GLUtils
 {
 public:

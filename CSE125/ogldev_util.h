@@ -1,6 +1,7 @@
 #ifndef OGLDEV_UTIL_H
 #define	OGLDEV_UTIL_H
 
+#pragma once
 #ifndef WIN32
 #include <unistd.h>
 #endif

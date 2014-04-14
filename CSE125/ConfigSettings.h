@@ -1,6 +1,7 @@
 #ifndef _CONFIG_SETTINGS_H_
 #define _CONFIG_SETTINGS_H_
 
+#pragma once
 #include <iostream>
 #include <fstream>
 #include <sstream>

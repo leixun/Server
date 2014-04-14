@@ -1,3 +1,4 @@
+#pragma once
 #include "glutils.h"
 
 #include <GL/glew.h>

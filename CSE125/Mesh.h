@@ -1,6 +1,7 @@
 #ifndef MESH_H
 #define	MESH_H
 
+#pragma once
 #include <map>
 #include <vector>
 #include <GL/glew.h>

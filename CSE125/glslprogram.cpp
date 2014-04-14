@@ -1,3 +1,4 @@
+#pragma once
 #include "glslprogram.h"
 
 #include "glutils.h"

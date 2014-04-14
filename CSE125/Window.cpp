@@ -1,4 +1,5 @@
 #define _USE_MATH_DEFINES
+#pragma once
 #include <iostream>
 #include <string>
 #include <time.h>
@@ -130,11 +131,13 @@ int main(int argc, char *argv[])
 	  boost::array<mat4, 1> m;
 	  m[0] = scene->getPlayerMats()[0];
 
-	  //send m
+	  // Print out matrix contents
+	  /*
 	  cout << (m[0])[0][0] << (m[0])[0][1] << (m[0])[0][2] << (m[0])[0][3] << endl;
 	  cout << (m[0])[1][0] << (m[0])[1][1] << (m[0])[1][2] << (m[0])[1][3] << endl;
 	  cout << (m[0])[2][0] << (m[0])[2][1] << (m[0])[2][2] << (m[0])[2][3] << endl;
 	  cout << (m[0])[3][0] << (m[0])[3][1] << (m[0])[3][2] << (m[0])[3][3] << endl;
+	  */
 
 	  server->send_mat4(m);
 	  io_service.poll();
