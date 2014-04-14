@@ -92,10 +92,17 @@ int main(int argc, char *argv[])
 
   int retState = 0;
 
+  LARGE_INTEGER freq, last, current;
+  double diff;
+  QueryPerformanceFrequency(&freq);
+  QueryPerformanceCounter(&last);
   while (true){
-	  static time_t tick = clock();
-	  float diff = (float)(clock() - tick) / CLOCKS_PER_SEC;
-	  tick = clock();
+	  //static time_t tick = clock();
+	  //float diff = (float)(clock() - tick) / CLOCKS_PER_SEC;
+	  //tick = clock();
+	  QueryPerformanceCounter(&current);
+	  diff = (double)(current.QuadPart - last.QuadPart) / (double)freq.QuadPart;
+	  last = current;
 	  scene->simulate(diff, 1.0 / 100);
 	  retState = server->get_keyState();
 	  io_service.poll();
