@@ -35,14 +35,21 @@ public:
 
 	int get_keyState()
 	{
-		return retState;
+		return keyState;
+	}
+	int get_camRot(){
+		return rot;
+	}
+	void reset_camRot(){
+		rot = 0;
 	}
 
 private:
 	udp::socket socket_;
 	udp::endpoint remote_endpoint_;
-	boost::array<int, 1> recv_buf_;
-	int retState;
+	boost::array<int, 2> recv_buf_;
+	int keyState;
+	int rot=0;
 
 	void start_receive()
 	{
@@ -56,7 +63,8 @@ private:
 	void handle_receive(const boost::system::error_code& error,
 		std::size_t /*bytes_transferred*/)
 	{
-		retState = recv_buf_[0];
+		keyState = recv_buf_[0];
+		rot += recv_buf_[1];
 		start_receive();
 	}
 	void handle_send(boost::shared_ptr<std::string> /*message*/,

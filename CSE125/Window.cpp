@@ -48,6 +48,8 @@ using glm::quat;
 using namespace std;
 int counter = 0;
 
+float cam_sp = 0.1;
+
 Scene* scene;
 boost::asio::io_service io_service;
 
@@ -62,7 +64,6 @@ udpServer* server;
 
 void handle_key_state(){
 	int retState = server->get_keyState();
-	io_service.poll();
 
 	if (retState & 1){ //'a'
 		cout << "move left" << endl;
@@ -94,6 +95,12 @@ void handle_key_state(){
 	}
 }
 
+void handle_cam_rot(){
+	int rot = server->get_camRot();
+	server->reset_camRot();
+	scene->pushRot(0, -cam_sp*rot);
+}
+
 int main(int argc, char *argv[])
 {
   scene = new Scene();
@@ -118,6 +125,7 @@ int main(int argc, char *argv[])
 	  last = current;
 
 	  handle_key_state();
+	  handle_cam_rot();
 	  scene->simulate(diff, 1.0 / 100);
 
 	  boost::array<mat4, 1> m;
