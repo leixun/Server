@@ -34,7 +34,12 @@ public:
 	mat4 getModelM(){ return modelM; }
 	void setModelM(mat4 m){ modelM = m; }
 
-	void setHMove(int m){ hmove = m; velocity[0] = m*speed; }
+	void setHMove(int m){ 
+		if (hmove != m){
+			hmove = m;
+			velocity[0] = m*speed;
+		} 
+	}
 	int getHMove(){ return hmove; }
 	void cancelHMove(int m){
 		if (hmove == m){
@@ -42,7 +47,12 @@ public:
 			velocity[0] = 0.0;
 		}
 	}
-	void setVMove(int m){ vmove = m; velocity[2] = -m*speed; }
+	void setVMove(int m){ 
+		if (vmove != m){
+			vmove = m;
+			velocity[2] = -m*speed;
+		}
+	}
 	int getVMove(){ return vmove; }
 	void cancelVMove(int m){
 		if (vmove == m){

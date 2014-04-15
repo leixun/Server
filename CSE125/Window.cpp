@@ -59,27 +59,45 @@ std::string make_daytime_string()
 }
 
 udpServer* server;
-void Window::idleCallback(void)
-{
-	static time_t tick = clock();
-	float diff = (float)(clock() - tick)/CLOCKS_PER_SEC;
-	tick = clock();
-	scene->simulate(diff, 1.0 / 100);
-}
-void Window::reshapeCallback(int w, int h)
-{
-}
-void Window::displayCallback(void)
-{
-}
 
-void server_update(int value){
-	glutTimerFunc(100, server_update, 0);
+void handle_key_state(){
+	int retState = server->get_keyState();
+	io_service.poll();
+
+	if (retState & 1){ //'a'
+		cout << "move left" << endl;
+		scene->setHMove(0, -1);
+	}else{
+		scene->cancelHMove(0, -1);
+	}
+	if (retState & 1 << 1){ //'d'
+		cout << "move right" << endl;
+		scene->setHMove(0, 1);
+	}else{
+		scene->cancelHMove(0, 1);
+	}
+	if (retState & 1 << 2){ //'w'
+		cout << "move up" << endl;
+		scene->setVMove(0, 1);
+	}else{
+		scene->cancelVMove(0, 1);
+	}
+	if (retState & 1 << 3){ //'s'
+		cout << "move down" << endl;
+		scene->setVMove(0, -1);
+	}else{
+		scene->cancelVMove(0, -1);
+	}
+	if (retState & 1 << 4){ //' '
+		cout << "jump" << endl;
+		scene->jump(0);
+	}
 }
 
 int main(int argc, char *argv[])
 {
   scene = new Scene();
+  scene->setGravity(vec3(0,-9.8,0));
 
   try
   {
@@ -90,51 +108,18 @@ int main(int argc, char *argv[])
 	  std::cerr << e.what() << std::endl;
   }
 
-  int retState = 0;
-
   LARGE_INTEGER freq, last, current;
   double diff;
   QueryPerformanceFrequency(&freq);
   QueryPerformanceCounter(&last);
   while (true){
-	  //static time_t tick = clock();
-	  //float diff = (float)(clock() - tick) / CLOCKS_PER_SEC;
-	  //tick = clock();
 	  QueryPerformanceCounter(&current);
 	  diff = (double)(current.QuadPart - last.QuadPart) / (double)freq.QuadPart;
 	  last = current;
-	  scene->simulate(diff, 1.0 / 100);
-	  retState = server->get_keyState();
-	  io_service.poll();
 
-	  if (retState & 1){
-		  cout << "move left" << endl;
-		  scene->setHMove(0, -1);
-	  }
-	  if (retState & 1 << 1){
-		  cout << "move right" << endl;
-		  scene->setHMove(0, 1);
-	  }
-	  if (retState & 1 << 2){
-		  cout << "move up" << endl;
-		  scene->setVMove(0, 1);
-	  }
-	  if (retState & 1 << 3){
-		  cout << "move down" << endl;
-		  scene->setVMove(0, -1);
-	  }
-	  if (!(retState | 0)){
-		  scene->cancelHMove(0, -1);
-	  }
-	  if (!(retState | 0 << 1)){
-		  scene->cancelHMove(0, 1);
-	  }
-	  if (!(retState | 0 << 2)){
-		  scene->cancelVMove(0, 1);
-	  }
-	  if (!(retState | 0 << 3)){
-		  scene->cancelVMove(0, -1);
-	  }
+	  handle_key_state();
+	  scene->simulate(diff, 1.0 / 100);
+
 	  boost::array<mat4, 1> m;
 	  m[0] = scene->getPlayerMats()[0];
 
