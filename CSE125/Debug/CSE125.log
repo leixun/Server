@@ -1,0 +1,46 @@
+﻿Build started 4/30/2014 3:35:54 PM.
+     1>Project "C:\workarea\Server\CSE125\CSE125.vcxproj" on node 2 (Rebuild target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /Iinclude/Qt /Iinclude /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _LIB /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt ConfigSettings.cpp glslprogram.cpp glutils.cpp Mesh.cpp ogldev_util.cpp ShaderController.cpp Texture.cpp VAO.cpp Window.cpp
+         Window.cpp
+         Please define _WIN32_WINNT or _WIN32_WINDOWS appropriately. For example:
+         - add -D_WIN32_WINNT=0x0501 to the compiler command line; or
+         - add _WIN32_WINNT=0x0501 to your project's Preprocessor Definitions.
+         Assuming _WIN32_WINNT=0x0501 (i.e. Windows XP target).
+     1>c:\workarea\server\cse125\cube.h(63): warning C4244: '-=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\workarea\server\cse125\cube.h(72): warning C4244: '-=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\workarea\server\cse125\scene.h(16): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\workarea\server\cse125\scene.h(20): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\workarea\server\cse125\scene.h(40): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\workarea\server\cse125\scene.h(43): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\workarea\server\cse125\scene.h(108): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\workarea\server\cse125\scene.h(114): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\workarea\server\cse125\scene.h(130): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\workarea\server\cse125\sphere.h(68): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\workarea\server\cse125\sphere.h(87): warning C4018: '<' : signed/unsigned mismatch
+         VAO.cpp
+         Texture.cpp
+         ShaderController.cpp
+         ogldev_util.cpp
+         Mesh.cpp
+         glutils.cpp
+         glslprogram.cpp
+         ConfigSettings.cpp
+         Generating Code...
+     1>c:\workarea\server\cse125\server.h(202): warning C4715: 'tcp_server::getState' : not all control paths return a value
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\workarea\Server\Debug\CSE125.exe" /INCREMENTAL /NOLOGO /LIBPATH:lib opengl32.lib glut32.lib glu32.lib glew32.lib QtCored4.lib QtOpenGL4.lib QtGui4.lib assimpD.lib DevIL.lib ILU.lib ILUT.lib OpenAL32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\workarea\Server\Debug\CSE125.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\workarea\Server\Debug\CSE125.lib" /MACHINE:X86 Debug\ConfigSettings.obj
+         Debug\glslprogram.obj
+         Debug\glutils.obj
+         Debug\Mesh.obj
+         Debug\ogldev_util.obj
+         Debug\ShaderController.obj
+         Debug\Texture.obj
+         Debug\VAO.obj
+         Debug\Window.obj
+         CSE125.vcxproj -> C:\workarea\Server\Debug\CSE125.exe
+     1>Done Building Project "C:\workarea\Server\CSE125\CSE125.vcxproj" (Rebuild target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:07.16

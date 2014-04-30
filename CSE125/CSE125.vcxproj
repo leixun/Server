@@ -95,12 +95,14 @@
     <ClInclude Include="Octree.h" />
     <ClInclude Include="ogldev_util.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="Server.h" />
     <ClInclude Include="ShaderController.h" />
     <ClInclude Include="SkyBox.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="Structures.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TextureScreen.h" />
+    <ClInclude Include="udpServer.h" />
     <ClInclude Include="VAO.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>

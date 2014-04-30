@@ -4,7 +4,7 @@
 #include <string>
 #include <time.h>
 #include <boost/asio.hpp>
-#include "udpServer.h"
+#include "Server.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
@@ -50,6 +50,9 @@ int counter = 0;
 
 float cam_sp = 0.1;
 
+std::vector <pair<string, mat4>>* stateVec = new vector<pair<string, mat4>>;
+std::vector <pair<string, mat4>>* recvVec = new vector<pair<string, mat4>>;
+
 Scene* scene;
 boost::asio::io_service io_service;
 
@@ -60,44 +63,53 @@ std::string make_daytime_string()
 	return "efef";
 }
 
-udpServer* server;
+tcp_server* server;
 
 void handle_key_state(){
-	int retState = server->get_keyState();
+	recvVec = server->getState();
+	io_service.poll();
+	std::cout << "recvVec key string:" << recvVec->front().first << std::endl;
+	int retState = (int)recvVec->front().second[0][0];
+	std::cout << "keyState:" << retState << std::endl;
 
 	if (retState & 1){ //'a'
-		cout << "move left" << endl;
+		//cout << "move left" << endl;
 		scene->setHMove(0, -1);
 	}else{
 		scene->cancelHMove(0, -1);
 	}
 	if (retState & 1 << 1){ //'d'
-		cout << "move right" << endl;
+		//cout << "move right" << endl;
 		scene->setHMove(0, 1);
 	}else{
 		scene->cancelHMove(0, 1);
 	}
 	if (retState & 1 << 2){ //'w'
-		cout << "move up" << endl;
+		//cout << "move up" << endl;
 		scene->setVMove(0, 1);
 	}else{
 		scene->cancelVMove(0, 1);
 	}
 	if (retState & 1 << 3){ //'s'
-		cout << "move down" << endl;
+		//cout << "move down" << endl;
 		scene->setVMove(0, -1);
 	}else{
 		scene->cancelVMove(0, -1);
 	}
 	if (retState & 1 << 4){ //' '
-		cout << "jump" << endl;
+		//cout << "jump" << endl;
 		scene->jump(0);
 	}
 }
 
 void handle_cam_rot(){
-	int rot = server->get_camRot();
-	server->reset_camRot();
+
+	recvVec = server->getState();
+	io_service.poll();
+	std::cout << "recvVec cam string:" << recvVec->back().first << std::endl;
+	int rot = (int)recvVec->back().second[0][0];
+	std::cout << "camState:" << rot << std::endl;
+	//server->reset_camRot(); // ret = 0 in server...need to do
 	scene->pushRot(0, -cam_sp*rot);
 }
 
@@ -106,9 +118,17 @@ int main(int argc, char *argv[])
   scene = new Scene();
   scene->setGravity(vec3(0,-9.8,0));
 
+  //init state vector
+  stateVec->push_back(std::make_pair("initState_s", mat4(0.0f)));
+
   try
   {
-	  server = new udpServer(io_service);
+	  tcp::resolver resolver(io_service);
+	  tcp::resolver::query query(tcp::v4(), "127.0.0.10", "13");
+	  tcp::resolver::iterator itr = resolver.resolve(query);
+
+	  tcp::endpoint endpoint = *itr;
+	  server = new tcp_server(io_service, endpoint);
   }
   catch (std::exception& e)
   {
@@ -138,8 +158,8 @@ int main(int argc, char *argv[])
 	  cout << (m[0])[2][0] << (m[0])[2][1] << (m[0])[2][2] << (m[0])[2][3] << endl;
 	  cout << (m[0])[3][0] << (m[0])[3][1] << (m[0])[3][2] << (m[0])[3][3] << endl;
 	  */
-
-	  server->send_mat4(m);
+	  stateVec->front() = std::make_pair("updateMat", m[0]);
+	  server->send(*stateVec);
 	  io_service.poll();
   }
 
