@@ -42,9 +42,10 @@ public:
 		return socket_;
 	}
 
-	void start()
+	void start(int pID)
 	{
-		boost::asio::async_read(socket_,
+		ret_.front() = std::make_pair(std::to_string(pID), mat4(0.0f));
+		boost::asio::async_write(socket_,
 			boost::asio::buffer(ret_, 2048),
 			boost::bind(&tcp_connection::handle_read, this,
 			boost::asio::placeholders::error));
@@ -117,6 +118,7 @@ public:
 	{
 		emptyRet.push_back(std::make_pair("initKey_s", mat4(0.0f)));
 		emptyRet.push_back(std::make_pair("initCam_s", mat4(0.0f)));
+		pID = 0;
 		start_accept();
 	}
 
@@ -136,7 +138,8 @@ public:
 		{
 			std::cout << "Client connected!" << std::endl;
 			join(connection);
-			connection->start();
+			connection->start(pID);
+			pID++;
 		}
 		start_accept();
 	}
@@ -163,7 +166,7 @@ public:
 		{
 			for each(tcp_connection_ptr client in clients_)
 			{
-				std::cout << "send called" << std::endl;
+				/*std::cout << "send called" << std::endl;
 				std::cout << "sendVec string:" << obj.front().first << std::endl;
 				std::cout << "sendVec dat:" << obj.front().second[0][0] <<
 					obj.front().second[0][1] <<
@@ -180,7 +183,7 @@ public:
 					obj.front().second[3][0] <<
 					obj.front().second[3][1] <<
 					obj.front().second[3][2] <<
-					obj.front().second[3][3] << std::endl;
+					obj.front().second[3][3] << std::endl;*/
 				client->deliver(obj);
 			}
 		}
@@ -202,6 +205,7 @@ public:
 	}
 
 private:
+	int pID;
 	tcp::acceptor acceptor_;
 	boost::asio::io_service& io_service_;
 	std::set<tcp_connection_ptr> clients_;

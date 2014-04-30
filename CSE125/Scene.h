@@ -149,7 +149,7 @@ public:
 		cube2->setAABB(AABB(vec3(-0.5, -0.5, -0.5), vec3(0.5, 0.5, 0.5)));
 		cube2->setType("Cube");
 		cube2->setName("Test Cube");
-		addStationary(cube2);
+		addPlayer(cube2);
 
 		Cube* cube3 = new Cube();
 		cube3->setSpeed(5);
@@ -157,7 +157,7 @@ public:
 		cube3->setAABB(AABB(vec3(-0.5, -0.5, -0.5), vec3(0.5, 0.5, 0.5)));
 		cube3->setType("Cube");
 		cube3->setName("Test Cube2");
-		addStationary(cube3);
+		addPlayer(cube3);
 
 		Cube* cube4 = new Cube();
 		cube4->setSpeed(5);
@@ -165,7 +165,7 @@ public:
 		cube4->setAABB(AABB(vec3(-0.5, -0.5, -0.5), vec3(0.5, 0.5, 0.5)));
 		cube4->setType("Cube");
 		cube4->setName("Test Cube3");
-		addStationary(cube4);
+		addPlayer(cube4);
 
 		Cube* cube5 = new Cube();
 		cube5->setSpeed(5);

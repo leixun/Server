@@ -70,35 +70,36 @@ void handle_key_state(){
 	io_service.poll();
 	std::cout << "recvVec key string:" << recvVec->front().first << std::endl;
 	int retState = (int)recvVec->front().second[0][0];
+	int pID = atoi(recvVec->front().first.c_str());
 	std::cout << "keyState:" << retState << std::endl;
 
 	if (retState & 1){ //'a'
 		//cout << "move left" << endl;
-		scene->setHMove(0, -1);
+		scene->setHMove(pID, -1);
 	}else{
-		scene->cancelHMove(0, -1);
+		scene->cancelHMove(pID, -1);
 	}
 	if (retState & 1 << 1){ //'d'
 		//cout << "move right" << endl;
-		scene->setHMove(0, 1);
+		scene->setHMove(pID, 1);
 	}else{
-		scene->cancelHMove(0, 1);
+		scene->cancelHMove(pID, 1);
 	}
 	if (retState & 1 << 2){ //'w'
 		//cout << "move up" << endl;
-		scene->setVMove(0, 1);
+		scene->setVMove(pID, 1);
 	}else{
-		scene->cancelVMove(0, 1);
+		scene->cancelVMove(pID, 1);
 	}
 	if (retState & 1 << 3){ //'s'
 		//cout << "move down" << endl;
-		scene->setVMove(0, -1);
+		scene->setVMove(pID, -1);
 	}else{
-		scene->cancelVMove(0, -1);
+		scene->cancelVMove(pID, -1);
 	}
 	if (retState & 1 << 4){ //' '
 		//cout << "jump" << endl;
-		scene->jump(0);
+		scene->jump(pID);
 	}
 }
 
@@ -108,9 +109,10 @@ void handle_cam_rot(){
 	io_service.poll();
 	std::cout << "recvVec cam string:" << recvVec->back().first << std::endl;
 	int rot = (int)recvVec->back().second[0][0];
+	int pID = atoi(recvVec->front().first.c_str());
 	std::cout << "camState:" << rot << std::endl;
 	//server->reset_camRot(); // ret = 0 in server...need to do
-	scene->pushRot(0, -cam_sp*rot);
+	scene->pushRot(pID, -cam_sp*rot);
 }
 
 int main(int argc, char *argv[])
@@ -120,11 +122,14 @@ int main(int argc, char *argv[])
 
   //init state vector
   stateVec->push_back(std::make_pair("initState_s", mat4(0.0f)));
+  stateVec->push_back(std::make_pair("initState_s", mat4(0.0f)));
+  stateVec->push_back(std::make_pair("initState_s", mat4(0.0f)));
+  stateVec->push_back(std::make_pair("initState_s", mat4(0.0f)));
 
   try
   {
 	  tcp::resolver resolver(io_service);
-	  tcp::resolver::query query(tcp::v4(), "127.0.0.10", "13");
+	  tcp::resolver::query query(tcp::v4(), "localhost", "13");
 	  tcp::resolver::iterator itr = resolver.resolve(query);
 
 	  tcp::endpoint endpoint = *itr;
@@ -148,8 +153,11 @@ int main(int argc, char *argv[])
 	  handle_cam_rot();
 	  scene->simulate(diff, 1.0 / 100);
 
-	  boost::array<mat4, 1> m;
+	  boost::array<mat4, 4> m;
 	  m[0] = scene->getPlayerMats()[0];
+	  m[1] = scene->getPlayerMats()[1];
+	  m[2] = scene->getPlayerMats()[2];
+	  m[3] = scene->getPlayerMats()[3];
 
 	  // Print out matrix contents
 	  /*
@@ -158,7 +166,11 @@ int main(int argc, char *argv[])
 	  cout << (m[0])[2][0] << (m[0])[2][1] << (m[0])[2][2] << (m[0])[2][3] << endl;
 	  cout << (m[0])[3][0] << (m[0])[3][1] << (m[0])[3][2] << (m[0])[3][3] << endl;
 	  */
-	  stateVec->front() = std::make_pair("updateMat", m[0]);
+	  (*stateVec)[0] = std::make_pair("0", m[0]);
+	  (*stateVec)[1] = std::make_pair("1", m[1]);
+	  (*stateVec)[2] = std::make_pair("2", m[2]);
+	  (*stateVec)[3] = std::make_pair("3", m[3]);
+
 	  server->send(*stateVec);
 	  io_service.poll();
   }
