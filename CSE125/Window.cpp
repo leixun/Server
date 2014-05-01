@@ -48,13 +48,17 @@ using glm::quat;
 using namespace std;
 int counter = 0;
 
-float cam_sp = 0.1;
+float cam_sp = 0.01;
 
 std::vector <pair<string, mat4>>* stateVec = new vector<pair<string, mat4>>;
 std::vector <pair<string, mat4>>* recvVec = new vector<pair<string, mat4>>;
 
 Scene* scene;
 boost::asio::io_service io_service;
+
+int player_ID = 0;
+int key_state = 0;
+int cam_rot = 0;
 
 std::string make_daytime_string()
 {
@@ -65,54 +69,41 @@ std::string make_daytime_string()
 
 tcp_server* server;
 
-void handle_key_state(){
-	recvVec = server->getState();
-	io_service.poll();
-	std::cout << "recvVec key string:" << recvVec->front().first << std::endl;
-	int retState = (int)recvVec->front().second[0][0];
-	int pID = atoi(recvVec->front().first.c_str());
-	std::cout << "keyState:" << retState << std::endl;
+void handle_key_state(int pid, int key_state){
 
-	if (retState & 1){ //'a'
+	if (key_state & 1){ //'a'
 		//cout << "move left" << endl;
-		scene->setHMove(pID, -1);
+		scene->setHMove(pid, -1);
 	}else{
-		scene->cancelHMove(pID, -1);
+		scene->cancelHMove(pid, -1);
 	}
-	if (retState & 1 << 1){ //'d'
+	if (key_state & 1 << 1){ //'d'
 		//cout << "move right" << endl;
-		scene->setHMove(pID, 1);
+		scene->setHMove(pid, 1);
 	}else{
-		scene->cancelHMove(pID, 1);
+		scene->cancelHMove(pid, 1);
 	}
-	if (retState & 1 << 2){ //'w'
+	if (key_state & 1 << 2){ //'w'
 		//cout << "move up" << endl;
-		scene->setVMove(pID, 1);
+		scene->setVMove(pid, 1);
 	}else{
-		scene->cancelVMove(pID, 1);
+		scene->cancelVMove(pid, 1);
 	}
-	if (retState & 1 << 3){ //'s'
+	if (key_state & 1 << 3){ //'s'
 		//cout << "move down" << endl;
-		scene->setVMove(pID, -1);
+		scene->setVMove(pid, -1);
 	}else{
-		scene->cancelVMove(pID, -1);
+		scene->cancelVMove(pid, -1);
 	}
-	if (retState & 1 << 4){ //' '
+	if (key_state & 1 << 4){ //' '
 		//cout << "jump" << endl;
-		scene->jump(pID);
+		scene->jump(pid);
 	}
 }
 
-void handle_cam_rot(){
-
-	recvVec = server->getState();
-	io_service.poll();
-	std::cout << "recvVec cam string:" << recvVec->back().first << std::endl;
-	int rot = (int)recvVec->back().second[0][0];
-	int pID = atoi(recvVec->front().first.c_str());
-	std::cout << "camState:" << rot << std::endl;
-	//server->reset_camRot(); // ret = 0 in server...need to do
-	scene->pushRot(pID, -cam_sp*rot);
+void handle_cam_rot(int pid, int cam_rot){
+	scene->pushRot(pid, -cam_sp*cam_rot);
+	cam_rot = 0; // possibly a problem
 }
 
 int main(int argc, char *argv[])
@@ -121,15 +112,24 @@ int main(int argc, char *argv[])
   scene->setGravity(vec3(0,-9.8,0));
 
   //init state vector
-  stateVec->push_back(std::make_pair("initState_s", mat4(0.0f)));
-  stateVec->push_back(std::make_pair("initState_s", mat4(0.0f)));
-  stateVec->push_back(std::make_pair("initState_s", mat4(0.0f)));
-  stateVec->push_back(std::make_pair("initState_s", mat4(0.0f)));
+  stateVec->push_back(std::make_pair("", mat4(0.0f)));
+  stateVec->push_back(std::make_pair("", mat4(0.0f)));
+  stateVec->push_back(std::make_pair("", mat4(0.0f)));
+  stateVec->push_back(std::make_pair("", mat4(0.0f)));
+
+  recvVec->push_back(std::make_pair("", mat4(0.0f)));
+  recvVec->push_back(std::make_pair("", mat4(0.0f)));
+  recvVec->push_back(std::make_pair("", mat4(0.0f)));
+  recvVec->push_back(std::make_pair("", mat4(0.0f)));
+  recvVec->push_back(std::make_pair("", mat4(0.0f)));
+  recvVec->push_back(std::make_pair("", mat4(0.0f)));
+  recvVec->push_back(std::make_pair("", mat4(0.0f)));
+  recvVec->push_back(std::make_pair("", mat4(0.0f)));
 
   try
   {
 	  tcp::resolver resolver(io_service);
-	  tcp::resolver::query query(tcp::v4(), "localhost", "13");
+	  tcp::resolver::query query(tcp::v4(), "localhost", "13"); // does nothing for the moment
 	  tcp::resolver::iterator itr = resolver.resolve(query);
 
 	  tcp::endpoint endpoint = *itr;
@@ -149,8 +149,38 @@ int main(int argc, char *argv[])
 	  diff = (double)(current.QuadPart - last.QuadPart) / (double)freq.QuadPart;
 	  last = current;
 
-	  handle_key_state();
-	  handle_cam_rot();
+	  recvVec = server->getState();
+	  io_service.poll();
+	  //std::cout << "recvVec key string:" << recvVec->front().first << std::endl; 
+
+	  if (strcmp((*recvVec)[0].first.c_str(), ""))
+	  {
+		  handle_key_state(atoi((*recvVec)[0].first.c_str()), (int)(*recvVec)[0].second[0][0]);
+		  //std::cout << "id: " << atoi((*recvVec)[0].first.c_str()) << std::endl;
+		  //std::cout << "val: " << (int)(*recvVec)[0].second[0][0] << std::endl;
+		  handle_cam_rot(atoi((*recvVec)[1].first.c_str()), (int)(*recvVec)[1].second[0][0]);
+		  //std::cout << "id: " << atoi((*recvVec)[1].first.c_str()) << std::endl;
+		  //std::cout << "val: " << (int)(*recvVec)[1].second[0][0] << std::endl;
+	  }
+
+	  if (strcmp((*recvVec)[2].first.c_str(), ""))
+	  {
+		  handle_key_state(atoi((*recvVec)[2].first.c_str()), (int)(*recvVec)[2].second[0][0]);
+		  handle_cam_rot(atoi((*recvVec)[3].first.c_str()), (int)(*recvVec)[3].second[0][0]);
+	  }
+
+	  if (strcmp((*recvVec)[4].first.c_str(), ""))
+	  {
+		  handle_key_state(atoi((*recvVec)[4].first.c_str()), (int)(*recvVec)[4].second[0][0]);
+		  handle_cam_rot(atoi((*recvVec)[5].first.c_str()), (int)(*recvVec)[5].second[0][0]);
+	  }
+
+	  if (strcmp((*recvVec)[6].first.c_str(), ""))
+	  {
+		  handle_key_state(atoi((*recvVec)[6].first.c_str()), (int)(*recvVec)[6].second[0][0]);
+		  handle_cam_rot(atoi((*recvVec)[7].first.c_str()), (int)(*recvVec)[7].second[0][0]);
+	  }
+
 	  scene->simulate(diff, 1.0 / 100);
 
 	  boost::array<mat4, 4> m;

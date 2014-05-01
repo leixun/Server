@@ -28,8 +28,8 @@ public:
 	tcp_connection(boost::asio::io_service& io_service, std::set<tcp_connection_ptr>& clients)
 		: socket_(io_service), clients_(clients)
 	{
-		ret_.push_back(std::make_pair("emptyinit_connection_s_should not see", mat4(0.0f)));
-		ret_.push_back(std::make_pair("emptyinit_connection_s_should not see", mat4(0.0f)));
+		ret_.push_back(std::make_pair("", mat4(0.0f)));
+		ret_.push_back(std::make_pair("", mat4(0.0f)));
 	}
 
 	~tcp_connection()
@@ -53,7 +53,7 @@ public:
 
 	void deliver(std::vector <pair<string, mat4>>& obj)
 	{
-		std::cout << "Server send data to connection" << std::endl;
+		//std::cout << "Server send data to connection" << std::endl;
 		boost::asio::async_write(socket_,
 			boost::asio::buffer(obj, 2048),
 			boost::bind(&tcp_connection::handle_write, this,
@@ -64,7 +64,7 @@ public:
 	{
 		if (!error)
 		{
-			std::cout << "Handling read" << std::endl;
+			//std::cout << "Handling read" << std::endl;
 			boost::asio::async_read(socket_,
 				boost::asio::buffer(ret_, 2048),
 				boost::bind(&tcp_connection::handle_read, shared_from_this(),
@@ -81,14 +81,14 @@ public:
 	{
 		if (!error)
 		{
-			std::cout << "connection sent data to client" << std::endl;
+			//std::cout << "connection sent data to client" << std::endl;
 			// all these pops might not be useful at all
 		}
 		// Else remove player from server
 		else
 		{
-			std::cout << "Error sending from connection to client:" << error << std::endl;
-			system("pause");
+			//std::cout << "Error sending from connection to client:" << error << std::endl;
+			//system("pause");
 			clients_.erase(shared_from_this());
 			socket_.close();
 		}
@@ -114,10 +114,27 @@ public:
 	tcp_server(boost::asio::io_service& io_service,
 		const tcp::endpoint& endpoint)
 		: io_service_(io_service),
-		acceptor_(io_service, endpoint)
+		acceptor_(io_service, tcp::endpoint(tcp::v4(), 13))
 	{
-		emptyRet.push_back(std::make_pair("initKey_s", mat4(0.0f)));
-		emptyRet.push_back(std::make_pair("initCam_s", mat4(0.0f)));
+		emptyRet.push_back(std::make_pair("", mat4(0.0f)));
+		emptyRet.push_back(std::make_pair("", mat4(0.0f)));
+		emptyRet.push_back(std::make_pair("", mat4(0.0f)));
+		emptyRet.push_back(std::make_pair("", mat4(0.0f)));
+		emptyRet.push_back(std::make_pair("", mat4(0.0f)));
+		emptyRet.push_back(std::make_pair("", mat4(0.0f)));
+		emptyRet.push_back(std::make_pair("", mat4(0.0f)));
+		emptyRet.push_back(std::make_pair("", mat4(0.0f)));
+
+
+		retVec_.push_back(std::make_pair("", mat4(0.0f)));
+		retVec_.push_back(std::make_pair("", mat4(0.0f)));
+		retVec_.push_back(std::make_pair("", mat4(0.0f)));
+		retVec_.push_back(std::make_pair("", mat4(0.0f)));
+		retVec_.push_back(std::make_pair("", mat4(0.0f)));
+		retVec_.push_back(std::make_pair("", mat4(0.0f)));
+		retVec_.push_back(std::make_pair("", mat4(0.0f)));
+		retVec_.push_back(std::make_pair("", mat4(0.0f)));
+
 		pID = 0;
 		start_accept();
 	}
@@ -166,24 +183,6 @@ public:
 		{
 			for each(tcp_connection_ptr client in clients_)
 			{
-				/*std::cout << "send called" << std::endl;
-				std::cout << "sendVec string:" << obj.front().first << std::endl;
-				std::cout << "sendVec dat:" << obj.front().second[0][0] <<
-					obj.front().second[0][1] <<
-					obj.front().second[0][2] <<
-					obj.front().second[0][3] <<
-					obj.front().second[1][0] <<
-					obj.front().second[1][1] <<
-					obj.front().second[1][2] <<
-					obj.front().second[1][3] <<
-					obj.front().second[2][0] <<
-					obj.front().second[2][1] <<
-					obj.front().second[2][2] <<
-					obj.front().second[2][3] <<
-					obj.front().second[3][0] <<
-					obj.front().second[3][1] <<
-					obj.front().second[3][2] <<
-					obj.front().second[3][3] << std::endl;*/
 				client->deliver(obj);
 			}
 		}
@@ -196,12 +195,14 @@ public:
 			std::cout << "getting state but no clients" << std::endl;
 			return &emptyRet;
 		}
-
 		for each(tcp_connection_ptr client in clients_)
 		{
 			std::cout << "getting from a client" << std::endl;
-			return client->getState();
+			retVec_[i++] = client->getState()->front();
+			retVec_[i++] = client->getState()->back();
 		}
+		i = 0;
+		return &retVec_;
 	}
 
 private:
@@ -210,4 +211,6 @@ private:
 	boost::asio::io_service& io_service_;
 	std::set<tcp_connection_ptr> clients_;
 	std::vector <pair<string, mat4>> emptyRet;
+	std::vector <pair<string, mat4>> retVec_;
+	int i = 0;
 };
